@@ -33,6 +33,11 @@ def get_users():
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
+@app.route('/users/name/<prefix>')
+def get_users_by_name(prefix):
+    res = UserResource.get_by_name_prefix(prefix)
+    rsp = Response(json.dumps(res), status=200, content_type="application/json")
+    return rsp
 
 @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
 def get_by_prefix(db_schema, table_name, column_name, prefix):
