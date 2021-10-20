@@ -12,3 +12,5 @@ class EventRDBService(RDBService):
         res = RDBService.run_sql(sql, fetch=True)
         res = res[0]["event_id"] + 1
         return res
+
+

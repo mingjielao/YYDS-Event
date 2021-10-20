@@ -23,7 +23,6 @@ class ServiceFactory:
 
         self.services["events"] = event_svc
 
-
     def get_service(self, service_name):
         result = self.services.get(service_name, None)
         return result

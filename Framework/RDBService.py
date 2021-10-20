@@ -10,12 +10,14 @@ logger.setLevel(logging.INFO)
 
 
 class RDBService:
+    @classmethod
+    def __init__(cls, connect_info):
 
-    def __init__(self, connect_info):
-        self._db_schema = connect_info["db_schema"]
-        self._table_name = connect_info["table_name"]
-        self._key_column = connect_info["key_column"]
+        cls._db_schema = connect_info["db_schema"]
+        cls._table_name = connect_info["table_name"]
+        cls._key_column = connect_info["key_column"]
 
+    @staticmethod
     def _get_db_connection():
 
         db_connect_info = context.get_db_info()
@@ -26,7 +28,7 @@ class RDBService:
         db_info = context.get_db_info()
 
         db_connection = pymysql.connect(
-           **db_info,
+            **db_info,
             autocommit=True
         )
         return db_connection
@@ -54,7 +56,7 @@ class RDBService:
         cur = conn.cursor()
 
         sql = "select * from " + db_schema + "." + table_name + " where " + \
-            column_name + " like " + "'" + value_prefix + "%'"
+              column_name + " like " + "'" + value_prefix + "%'"
         print("SQL Statement = " + cur.mogrify(sql, None))
 
         res = cur.execute(sql)
@@ -64,6 +66,38 @@ class RDBService:
 
         return res
 
+    @classmethod
+    def get_by_attribute(cls, column_name, attribute):
+
+        conn = RDBService._get_db_connection()
+        cur = conn.cursor()
+
+        sql = "select * from " + cls._db_schema + "." + cls._table_name + " where " + \
+              column_name + " = " + attribute
+
+        res = cur.execute(sql)
+        res = cur.fetchall()
+
+        conn.close()
+
+        return res
+
+    @classmethod
+    def delete_by_attribute(cls, column_name, attribute):
+
+        conn = RDBService._get_db_connection()
+        cur = conn.cursor()
+
+        sql = "delete from " + cls._db_schema + "." + cls._table_name + " where " + \
+              column_name + " = " + attribute
+
+        res = cur.execute(sql)
+        res = cur.fetchall()
+
+        conn.close()
+
+        return res
+    @classmethod
     def get_where_clause_args(self, template):
 
         terms = []
@@ -78,11 +112,11 @@ class RDBService:
                 terms.append(k + "=%s")
                 args.append(v)
 
-            clause = " where " +  " AND ".join(terms)
-
+            clause = " where " + " AND ".join(terms)
 
         return clause, args
 
+    @classmethod
     def find_by_template(self, db_schema, table_name, template=None, field_list=None,
                          limit=None, offset=None):
 
@@ -99,13 +133,14 @@ class RDBService:
 
         return res
 
+    @classmethod
     def create(self, db_schema, table_name, create_data):
 
         cols = []
         vals = []
         args = []
 
-        for k,v in create_data.items():
+        for k, v in create_data.items():
             cols.append(k)
             vals.append('%s')
             args.append(v)
@@ -114,7 +149,7 @@ class RDBService:
         vals_clause = "values (" + ",".join(vals) + ")"
 
         sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
-            " " + vals_clause
+                   " " + vals_clause
 
         res = RDBService.run_sql(sql_stmt, args)
         return res

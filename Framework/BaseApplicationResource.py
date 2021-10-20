@@ -36,6 +36,16 @@ class BaseApplicationResource(ABC):
         res = db_resource.create(db_resource._db_schema, db_table_name, new_resource_data)
         return res
 
+    def get_by_resource_id(self, resource_id):
+        db_resource = self._get_db_resource()
+        res = db_resource.get_by_attribute("event_id", resource_id)
+        return res
+
+    def delete_by_resource_id(self, resource_id):
+        db_resource = self._get_db_resource()
+        res = db_resource.delete_by_attribute("event_id", resource_id)
+        return res
+
     def get_data_resource_info(self):
         pass
 
