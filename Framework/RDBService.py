@@ -49,13 +49,13 @@ class RDBService:
 
         return res
 
-    @staticmethod
-    def get_by_prefix(db_schema, table_name, column_name, value_prefix):
+    @classmethod
+    def get_by_prefix(cls, column_name, value_prefix):
 
         conn = RDBService._get_db_connection()
         cur = conn.cursor()
 
-        sql = "select * from " + db_schema + "." + table_name + " where " + \
+        sql = "select * from " + cls.db_schema + "." + cls.table_name + " where " + \
               column_name + " like " + "'" + value_prefix + "%'"
         print("SQL Statement = " + cur.mogrify(sql, None))
 
@@ -97,8 +97,25 @@ class RDBService:
         conn.close()
 
         return res
+
     @classmethod
-    def get_where_clause_args(self, template):
+    def put_by_attribute(cls, column_name, attribute, update_data):
+        conn = RDBService._get_db_connection()
+        cur = conn.cursor()
+
+        for col, content in update_data.items():
+            sql = "UPDATE " + cls._db_schema + "." + cls._table_name + " SET " + col + " = '" \
+                        + content + "' WHERE " + column_name + " = " + attribute
+            print(sql)
+            res = cur.execute(sql)
+            conn.commit()
+
+        conn.close()
+
+        return res
+
+    @classmethod
+    def get_where_clause_args(cls, template):
 
         terms = []
         args = []
@@ -117,12 +134,12 @@ class RDBService:
         return clause, args
 
     @classmethod
-    def find_by_template(self, db_schema, table_name, template=None, field_list=None,
+    def find_by_template(cls, template=None, field_list=None,
                          limit=None, offset=None):
 
-        wc, args = self.get_where_clause_args(template)
+        wc, args = cls.get_where_clause_args(template)
         # proj = self._get_project_terms(field_list)
-        sql = "select * from " + db_schema + "." + table_name + " " + wc
+        sql = "select * from " + cls._db_schema + "." + cls._table_name + " " + wc
 
         if limit is not None:
             sql += " limit " + str(limit)
@@ -134,7 +151,7 @@ class RDBService:
         return res
 
     @classmethod
-    def create(self, db_schema, table_name, create_data):
+    def create(cls, create_data):
 
         cols = []
         vals = []
@@ -148,7 +165,7 @@ class RDBService:
         cols_clause = "(" + ",".join(cols) + ")"
         vals_clause = "values (" + ",".join(vals) + ")"
 
-        sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
+        sql_stmt = "insert into " + cls._db_schema + "." + cls._table_name + " " + cols_clause + \
                    " " + vals_clause
 
         res = RDBService.run_sql(sql_stmt, args)
