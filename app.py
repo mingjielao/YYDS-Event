@@ -1,11 +1,12 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
 from flask_cors import CORS
 import json
 import logging
 
-from application_services.imdb_artists_resource import IMDBArtistResource
-from application_services.UsersResource.user_service import UserResource
-from database_services.RDBService import RDBService as RDBService
+from utils import rest_utils
+from middleware.service_factory import ServiceFactory
+from application_services.event_service import EventResource
+from Framework.RDBService import RDBService as RDBService
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -20,30 +21,39 @@ def hello_world():
     return '<u>Hello World!</u>'
 
 
-@app.route('/imdb/artists/<prefix>')
-def get_artists_by_prefix(prefix):
-    res = IMDBArtistResource.get_by_name_prefix(prefix)
-    rsp = Response(json.dumps(res), status=200, content_type="application/json")
+@app.route('/api/<resource_collection>', methods=["GET", "POST"])
+def do_resource_collection(resource_collection):
+
+    request_inputs = rest_utils.RESTContext(request, resource_collection)
+    service = ServiceFactory()
+    svc = service.get_service(resource_collection)
+
+    if request_inputs.method == "GET":
+        res = svc.get_by_template(request_inputs.args,
+                                  field_list=request_inputs.fields,
+                                  limit=request_inputs.limit,
+                                  offset=request_inputs.offset
+                                  )
+        # res = request_inputs.add_pagination(res)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    elif request_inputs.method == "POST":
+        res = svc.create(request_inputs.args)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
     return rsp
 
 
-@app.route('/users')
-def get_users():
-    res = UserResource.get_by_template(None)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-    return rsp
-
-@app.route('/users/name/<prefix>')
-def get_users_by_name(prefix):
-    res = UserResource.get_by_name_prefix(prefix)
-    rsp = Response(json.dumps(res), status=200, content_type="application/json")
-    return rsp
-
-@app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
-def get_by_prefix(db_schema, table_name, column_name, prefix):
-    res = RDBService.get_by_prefix(db_schema, table_name, column_name, prefix)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-    return rsp
+# @app.route('/api/<resource_collection>/<resource_id>', method=["GET", "POST"])
+# def specific_resource(resource_collection, resource_id):
+#     request_inputs = rest_utils.RESTContext(request, resource_collection)
+#     service = ServiceFactory()
+#     svc = service.get_service(resource_collection)
+#
+#     if request_inputs.method == "GET":
+#         res = svc.get_by_resource_id(resource_id, field_list=request_inputs.fields)
+#         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
 
 
 if __name__ == '__main__':

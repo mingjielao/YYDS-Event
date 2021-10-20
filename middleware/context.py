@@ -1,8 +1,8 @@
-
 import os
 
 # This is a bad place for this import
 import pymysql
+
 
 def get_db_info():
     """
