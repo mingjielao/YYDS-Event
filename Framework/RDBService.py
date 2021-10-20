@@ -31,7 +31,8 @@ class RDBService:
         )
         return db_connection
 
-    def run_sql(sql_statement, args, fetch=False):
+    @staticmethod
+    def run_sql(sql_statement, args=None, fetch=False):
 
         conn = RDBService._get_db_connection()
 
@@ -46,7 +47,7 @@ class RDBService:
 
         return res
 
-
+    @staticmethod
     def get_by_prefix(db_schema, table_name, column_name, value_prefix):
 
         conn = RDBService._get_db_connection()

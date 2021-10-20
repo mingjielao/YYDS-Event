@@ -11,8 +11,7 @@ class EventResource(BaseApplicationResource):
         pass
 
     def create(self, new_resource_info):
-
-        next_id = event_rdb_service.get_next_id()
+        next_id = event_rdb_service.EventRDBService.get_next_id()
         new_resource_info["id"] = next_id
         res = super().create(new_resource_info)
 
