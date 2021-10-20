@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from Framework.RDBService import RDBService
 
 
 class BaseApplicationException(Exception):
