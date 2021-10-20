@@ -116,5 +116,5 @@ class RDBService:
         sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
             " " + vals_clause
 
-        res = RDBService.run_sql(args)
+        res = RDBService.run_sql(sql_stmt, args)
         return res

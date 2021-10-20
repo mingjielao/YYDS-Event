@@ -8,7 +8,7 @@ class EventRDBService(RDBService):
 
     @staticmethod
     def get_next_id():
-        sql = "select max(id) as id from events;"
+        sql = "select max(event_id) as event_id from YYDS.events;"
         res = RDBService.run_sql(sql, fetch=True)
-        res = res[0]["id"] + 1
+        res = res[0]["event_id"] + 1
         return res

@@ -33,9 +33,7 @@ class BaseApplicationResource(ABC):
 
         db_resource = self._get_db_resource()
         db_table_name = self._get_db_table_name()
-        res = db_resource.create(
-            db_table_name, new_resource_data
-        )
+        res = db_resource.create(db_resource._db_schema, db_table_name, new_resource_data)
         return res
 
     def get_data_resource_info(self):
