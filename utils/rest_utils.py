@@ -13,9 +13,10 @@ class RESTContext:
     def __init__(self, request_context, path_parameters=None):
         log_message = ""
         self.limit = RESTContext._default_limit
-        self.offset = None
+
         self.path = request_context.path
         self.args = dict(request_context.args)
+        self.offset = self.args.get("offset")
         self.filtered_args()
 
         self.path = request.path
@@ -32,9 +33,10 @@ class RESTContext:
 
         if "limit" in self.args:
             self.limit = self.args.get("limit")
+            self.args.pop("limit")
 
-        self.args.pop("limit")
-        self.args.pop("offset")
+        if "offset" in self.args:
+            self.args.pop("offset")
 
     def add_pagination(self):
         pass
