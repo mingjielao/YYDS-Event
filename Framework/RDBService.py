@@ -105,7 +105,7 @@ class RDBService:
 
         for col, content in update_data.items():
             sql = "UPDATE " + cls._db_schema + "." + cls._table_name + " SET " + col + " = '" \
-                        + content + "' WHERE " + column_name + " = " + attribute
+                        + str(content) + "' WHERE " + column_name + " = " + attribute
             print(sql)
             res = cur.execute(sql)
             conn.commit()
