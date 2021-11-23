@@ -1,4 +1,4 @@
-from Framework.BaseApplicationResource import BaseApplicationResource
+from framework.base_application_resource import BaseApplicationResource
 from database_services.event_rdb_service import EventRDBService
 
 
@@ -23,7 +23,9 @@ class EventResource(BaseApplicationResource):
         return resource_data
 
     def create(self, new_resource_info):
-        next_id = EventRDBService.get_next_id()
+        db_svc = self._get_db_resource()
+
+        next_id = db_svc.get_next_id()
         new_resource_info["event_id"] = next_id
         res = super().create(new_resource_info)
 

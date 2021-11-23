@@ -81,10 +81,11 @@ def specific_resource(resource_collection, resource_id):
     request_inputs = RESTContext(request, resource_collection)
     service = ServiceFactory()
     svc = service.get_service(resource_collection)
+
     if svc is None:
         rsp = Response(status=400, content_type="application/json")
     elif request_inputs.method == "GET":
-        res = svc.get_by_resource_id(resource_id)
+        res = svc.get_by_resource_id(resource_id, field_list=request_inputs.fields)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     elif request_inputs.method == "PUT":
         res = svc.put_by_resource_id(resource_id, request.get_json())
