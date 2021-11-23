@@ -3,19 +3,18 @@ import json
 import logging
 
 import middleware.context as context
+from framework.base_data_resource import BaseDataResource
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class RDBService:
-    @classmethod
-    def __init__(cls, connect_info):
-
-        cls._db_schema = connect_info["db_schema"]
-        cls._table_name = connect_info["table_name"]
-        cls._key_column = connect_info["key_column"]
+class RDBDataResource(BaseDataResource):
+    def __init__(self, connect_info):
+        connect_info["cursorclass"] = pymysql.cursors.DictCursor
+        connect_info["autocommit"] = True
+        super().__init__(connect_info)
 
     @staticmethod
     def _get_db_connection():
@@ -32,22 +31,6 @@ class RDBService:
             autocommit=True
         )
         return db_connection
-
-    @staticmethod
-    def run_sql(sql_statement, args=None, fetch=False):
-
-        conn = RDBService._get_db_connection()
-
-        try:
-            cur = conn.cursor()
-            res = cur.execute(sql_statement, args=args)
-            if fetch:
-                res = cur.fetchall()
-        except Exception as e:
-            conn.close()
-            raise e
-
-        return res
 
     @classmethod
     def get_by_prefix(cls, column_name, value_prefix):
@@ -100,7 +83,7 @@ class RDBService:
 
     @classmethod
     def put_by_attribute(cls, column_name, attribute, update_data):
-        conn = RDBService._get_db_connection()
+        conn = self._get_db_connection()
         cur = conn.cursor()
 
         for col, content in update_data.items():
@@ -133,40 +116,77 @@ class RDBService:
 
         return clause, args
 
-    @classmethod
-    def find_by_template(cls, template=None, field_list=None,
-                         limit=None, offset=None):
+    def find_by_template(self, resource_name, template=None, field_list=None, limit=None, offset=None):
 
-        wc, args = cls.get_where_clause_args(template)
-        # proj = self._get_project_terms(field_list)
-        sql = "select * from " + cls._db_schema + "." + cls._table_name + " " + wc
+        wc, args = self._get_where_clause_args(template)
+        proj = self._get_project_terms(field_list)
+
+        sql = "select " + proj + " from " + resource_name + " " + wc
 
         if limit is not None:
             sql += " limit " + str(limit)
         if offset is not None:
             sql += " offset " + str(offset)
 
-        res = RDBService.run_sql(sql, args, fetch=True)
+        res = self._run_q(sql, args, fetch=True)
 
         return res
 
-    @classmethod
-    def create(cls, create_data):
+    def create(self, resource_name, new_resource_data):
+
+        sql = "insert into " + resource_name
 
         cols = []
         vals = []
         args = []
 
-        for k, v in create_data.items():
+        for k, v in new_resource_data.items():
             cols.append(k)
             vals.append('%s')
             args.append(v)
 
-        cols_clause = "(" + ",".join(cols) + ")"
-        vals_clause = "values (" + ",".join(vals) + ")"
+        sql += " (" + ",".join(cols) + ") "
+        sql += " values(" + ",".join(vals) + ") "
 
-        sql_stmt = "insert into " + cls._db_schema + "." + cls._table_name + " " + cols_clause + \
-                   " " + vals_clause
+        res = self._run_q(sql, args, fetch=False)
+        return res
 
-        res = RDBService.run_sql(sql_stmt, args)
+    def _get_where_clause_args(self, template):
+        if template is None or template == {}:
+            wc, args = "", None
+        else:
+            args = []
+            terms = []
+
+            for k,v in template.items():
+                tmp = k + "=%s"
+                terms.append(tmp)
+                args.append(v)
+
+            wc = " where " + " and ".join(terms)
+        return wc, args
+
+    def _get_project_terms(self, field_list):
+        if field_list is None or len(field_list) == 0:
+            result = " * "
+        else:
+            result = " " + ",".join(field_list) + " "
+        return result
+
+    def _get_connection(self):
+        conn = pymysql.connect(**self.connect_info)
+        return conn
+
+    def _run_q(self, sql, args=None, fetch=False):
+        conn = self._get_connection()
+        cur = conn.cursor()
+
+        full_sql = cur.mogrify(sql, args)
+        logger.debug("rdb_data_resource._run_q: SQL = " + full_sql)
+
+        res = cur.execute(sql, args)
+        if fetch:
+            res = cur.fetchall()
+
+        conn.close()
         return res

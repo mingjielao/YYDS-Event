@@ -16,25 +16,22 @@ class BaseApplicationResource(ABC):
 
     def get_by_template(self, template=None, field_list=None, limit=None, offset=None):
         db_resource = self._get_db_resource()
+        db_table_name = self._get_db_table_name()
 
-        res = db_resource.find_by_template(
-            template=template,
-            field_list=field_list,
-            limit=limit,
-            offset=offset
-        )
-        return res
-
-    def create(self, new_resource_data):
-
-        db_resource = self._get_db_resource()
-        res = db_resource.create(new_resource_data)
+        res = db_resource.find_by_template(db_table_name, template, field_list, limit, offset)
+        res = self.get_links(res)
         return res
 
     def get_by_resource_id(self, resource_id):
         db_resource = self._get_db_resource()
         res = db_resource.get_by_attribute("event_id", resource_id)
         res = self.get_links(res)
+        return res
+
+    def create(self, new_resource_data):
+        db_resource = self._get_db_resource()
+        db_table_name = self._get_db_table_name()
+        res = db_resource.create(self, db_table_name, new_resource_data)
         return res
 
     def delete_by_resource_id(self, resource_id):

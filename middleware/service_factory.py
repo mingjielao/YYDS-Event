@@ -1,14 +1,13 @@
 import middleware.context as context
 
-from application_services.event_service import EventResource
-
+from application_services.event_application_service import EventResource
 from database_services.event_rdb_service import EventRDBService
 
 
 class ServiceFactory:
 
     def __init__(self):
-        self.db_connect_info = {"db_schema": "YYDS", "table_name": "events", "key_column": ""}
+        self.db_connect_info = {"table_name": "events", "key_column": ""}
 
         r_svc = EventRDBService(self.db_connect_info)
 
