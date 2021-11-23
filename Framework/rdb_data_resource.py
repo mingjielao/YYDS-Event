@@ -48,34 +48,31 @@ class RDBDataResource(BaseDataResource):
 
         return res
 
-    def get_by_attribute(self, field_list, key_values):
-        sql = "select * from " + cls._db_schema + "." + cls._table_name + " where " + \
-              column_name + " = " + attribute
+    def get_by_attribute(self, db_resource, template, field_list):
+        wc, args = self._get_where_clause_args(template)
+        proj = self._get_project_terms(field_list)
 
-        res = self._run_q(sql, None, fetch=True)
+        sql = "select " + proj + " from " + db_resource + wc
+        res = self._run_q(sql, args, fetch=True)
         return res
 
-    @classmethod
-    def delete_by_attribute(cls, column_name, attribute):
-        sql = "delete from " + cls._db_schema + "." + cls._table_name + " where " + \
-              column_name + " = " + attribute
+    def delete_by_attribute(self, db_resource, template):
+        wc, args = self._get_where_clause_args(template)
+
+        sql = "delete from " + db_resource + wc
 
         res = self._run_q(sql, args, fetch=True)
         return res
 
-    @classmethod
-    def put_by_attribute(cls, column_name, attribute, update_data):
-        conn = self._get_db_connection()
-        cur = conn.cursor()
+    def put_by_attribute(self, db_resource, template, update_data):
+        wc, args = self._get_where_clause_args(template)
 
+        sql = "UPDATE " + db_resource + " SET "
         for col, content in update_data.items():
-            sql = "UPDATE " + cls._db_schema + "." + cls._table_name + " SET " + col + " = '" \
-                        + str(content) + "' WHERE " + column_name + " = " + attribute
-            print(sql)
-            res = cur.execute(sql)
-            conn.commit()
+            sql = sql + col + " = '" + str(content) + "'"
 
-        conn.close()
+        sql = sql + wc
+        res = self._run_q(sql, args, fetch=True)
 
         return res
 
@@ -114,7 +111,6 @@ class RDBDataResource(BaseDataResource):
         return res
 
     def create(self, resource_name, new_resource_data):
-
         sql = "insert into " + resource_name
 
         cols = []

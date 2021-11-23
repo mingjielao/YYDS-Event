@@ -15,7 +15,7 @@ class ServiceFactory:
         event_svc_config_info = {
             "db_resource": r_svc,
             "db_table_name": "events",
-            "key_columns": ["id"]
+            "key_columns": ["event_id"]
         }
         event_svc = EventResource(event_svc_config_info)
 
