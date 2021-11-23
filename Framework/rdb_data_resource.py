@@ -18,7 +18,6 @@ class RDBDataResource(BaseDataResource):
 
     @staticmethod
     def _get_db_connection():
-
         db_connect_info = context.get_db_info()
 
         logger.info("RDBService._get_db_connection:")
@@ -49,36 +48,19 @@ class RDBDataResource(BaseDataResource):
 
         return res
 
-    @classmethod
-    def get_by_attribute(cls, column_name, attribute):
-
-        conn = RDBService._get_db_connection()
-        cur = conn.cursor()
-
+    def get_by_attribute(self, field_list, key_values):
         sql = "select * from " + cls._db_schema + "." + cls._table_name + " where " + \
               column_name + " = " + attribute
 
-        res = cur.execute(sql)
-        res = cur.fetchall()
-
-        conn.close()
-
+        res = self._run_q(sql, None, fetch=True)
         return res
 
     @classmethod
     def delete_by_attribute(cls, column_name, attribute):
-
-        conn = RDBService._get_db_connection()
-        cur = conn.cursor()
-
         sql = "delete from " + cls._db_schema + "." + cls._table_name + " where " + \
               column_name + " = " + attribute
 
-        res = cur.execute(sql)
-        res = cur.fetchall()
-
-        conn.close()
-
+        res = self._run_q(sql, args, fetch=True)
         return res
 
     @classmethod
@@ -99,7 +81,6 @@ class RDBDataResource(BaseDataResource):
 
     @classmethod
     def get_where_clause_args(cls, template):
-
         terms = []
         args = []
         clause = None

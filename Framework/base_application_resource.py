@@ -22,9 +22,9 @@ class BaseApplicationResource(ABC):
         res = self.get_links(res)
         return res
 
-    def get_by_resource_id(self, resource_id):
+    def get_by_resource_id(self, key_values, field_list):
         db_resource = self._get_db_resource()
-        res = db_resource.get_by_attribute("event_id", resource_id)
+        res = db_resource.get_by_attribute(field_list, key_values)
         res = self.get_links(res)
         return res
 

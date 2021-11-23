@@ -7,8 +7,7 @@ from database_services.event_rdb_service import EventRDBService
 class ServiceFactory:
 
     def __init__(self):
-        self.db_connect_info = {"table_name": "events", "key_column": ""}
-
+        self.db_connect_info = context.get_db_info()
         r_svc = EventRDBService(self.db_connect_info)
 
         self.services = {}

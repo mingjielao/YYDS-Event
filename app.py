@@ -48,7 +48,8 @@ def specific_resource(resource_collection, resource_id):
     svc = service.get_service(resource_collection)
 
     if request_inputs.method == "GET":
-        res = svc.get_by_resource_id(resource_id)
+
+        res = svc.get_by_resource_id(resource_id, field_list=request_inputs.fields)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     elif request_inputs.method == "PUT":
         res = svc.put_by_resource_id(resource_id, request.get_json())
