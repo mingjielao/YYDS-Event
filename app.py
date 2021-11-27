@@ -44,6 +44,7 @@ def before_request_func():
 @app.after_request
 def after_request_func(response):
     print("after_request is running!")
+    NotificationMiddlewareHandler.notify(request, "arn:aws:sns:us-east-2:770569437322:notification")
     return response
 
 
