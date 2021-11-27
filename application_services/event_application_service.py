@@ -24,7 +24,8 @@ class EventResource(BaseApplicationResource):
 
     def create(self, new_resource_info):
         db_svc = self._get_db_resource()
-
+        if 'event_start_time' not in new_resource_info or 'event_end_time' not in new_resource_info or event_organizer not in new_resource_info:
+            return -1
         next_id = db_svc.get_next_id()
         new_resource_info["event_id"] = next_id
         res = super().create(new_resource_info)

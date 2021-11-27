@@ -8,6 +8,7 @@ from utils.rest_utils import RESTContext
 from middleware.service_factory import ServiceFactory
 from flask_dance.contrib.google import make_google_blueprint, google
 import middleware.security as security
+
 from middleware.notification import NotificationMiddlewareHandler
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -35,7 +36,10 @@ g_bp = app.blueprints.get("google")
 
 @app.before_request
 def before_request_func():
-    result_ok = security.check_security(request, google, g_bp)
+    try:
+        result_ok = security.check_security(request, google, g_bp)
+    except Exception as e:  # or maybe any OAuth2Error
+        return redirect(url_for("google.login"))
     print("before request...")
     if not result_ok:
         return redirect(url_for("google.login"))
@@ -59,8 +63,7 @@ def do_resource_collection(resource_collection):
     svc = service.get_service(resource_collection)
 
     if svc is None:
-        rsp = Response(status=400, content_type="application/json")
-
+        rsp = Response(json.dumps("Resource not found", default=str), status=404, content_type="application/json")
     elif request_inputs.method == "GET":
         res = svc.get_by_template(request_inputs.args,
                                   field_list=request_inputs.fields,
@@ -68,10 +71,12 @@ def do_resource_collection(resource_collection):
                                   offset=request_inputs.offset)
         # res = request_inputs.add_pagination(res)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
     elif request_inputs.method == "POST":
         res = svc.create(request.get_json())
-        rsp = Response(json.dumps(res, default=str), status=201, content_type="application/json")
+        if res == -1:
+            rsp = Response(json.dumps("Bad data", default=str), status=400, content_type="application/json")
+        else:
+            rsp = Response(json.dumps(res, default=str), status=201, content_type="application/json")
 
     return rsp
 
@@ -83,7 +88,7 @@ def specific_resource(resource_collection, resource_id):
     svc = service.get_service(resource_collection)
 
     if svc is None:
-        rsp = Response(status=400, content_type="application/json")
+        rsp = Response(json.dumps("Resource not found", default=str), status=404, content_type="application/json")
     elif request_inputs.method == "GET":
         res = svc.get_by_resource_id(resource_id, field_list=request_inputs.fields)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
