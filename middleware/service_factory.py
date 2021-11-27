@@ -1,6 +1,6 @@
 import middleware.context as context
 
-from application_services.event_application_service import EventResource
+from application_services.EventsResource.event_application_service import EventResource
 from database_services.event_rdb_service import EventRDBService
 
 
