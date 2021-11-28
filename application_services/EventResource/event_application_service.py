@@ -1,6 +1,4 @@
 from framework.base_application_resource import BaseApplicationResource
-from database_services.event_rdb_service import EventRDBService
-
 
 class EventResource(BaseApplicationResource):
 
@@ -12,7 +10,7 @@ class EventResource(BaseApplicationResource):
             event_id = r.get('event_id')
 
             links = []
-            self_link = {"rel": "self", "href": "/api/events/" + str(event_id)}
+            self_link = {"rel": "self", "href": "/api/event/" + str(event_id)}
             links.append(self_link)
 
             users_link = {"rel": "event_members", "href": "/api/users?event_id=" + str(event_id)}
