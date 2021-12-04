@@ -35,15 +35,16 @@ app.register_blueprint(blueprint, url_prefix="/login")
 g_bp = app.blueprints.get("google")
 
 
-@app.before_request
-def before_request_func():
-    try:
-        result_ok = security.check_security(request, google, g_bp)
-    except Exception as e:  # or maybe any OAuth2Error
-        return redirect(url_for("google.login"))
-    print("before request...")
-    if not result_ok:
-        return redirect(url_for("google.login"))
+# @app.before_request
+# def before_request_func():
+    # try:
+    #     result_ok = security.check_security(request, google, g_bp)
+    # except Exception as e:  # or maybe any OAuth2Error
+    #     return redirect(url_for("google.login"))
+    # print("before request...")
+    # if not result_ok:
+    #     return redirect(url_for("google.login"))
+
 
 
 @app.after_request
@@ -102,6 +103,20 @@ def specific_resource(resource_collection, resource_id):
         rsp = Response(json.dumps(res, default=str), status=204, content_type="application/json")
     return rsp
 
+@app.route('/api/event/<resource_id>/<linked_resource>', methods=["GET"])
+def linked_resource(resource_id, linked_resource):
+    request_inputs = RESTContext(request, "event")
+    service = ServiceFactory()
+    svc = service.get_service("event")
+    linked_svc = service.get_service(linked_resource)
+
+    if linked_svc is None:
+        rsp = Response(json.dumps("Linked resource not found", default=str), status=404, content_type="application/json")
+    elif linked_resource == "eventvenue" or linked_resource == "eventtype" or linked_resource == "eventorganizer":
+        field_name = linked_resource[5:]+"_id"
+        res = linked_svc.get_by_resource_id(str(svc.get_by_resource_id(resource_id, field_list=[field_name])[0][field_name]), field_list=request_inputs.fields)
+        rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    return rsp
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
