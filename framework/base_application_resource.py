@@ -18,10 +18,10 @@ class BaseApplicationResource(ABC):
         db_resource = self._get_db_resource()
         db_table_name = self._get_db_table_name()
 
-        if limit is None or limit > 20:
-            limit = 20
+        if limit is None or int(limit) > 20:
+            limit = "20"
         if offset is None:
-            offset = 0
+            offset = "0"
 
         res = db_resource.find_by_template(db_table_name, template, field_list, limit, offset)
         res = self.get_links(res)
@@ -33,11 +33,11 @@ class BaseApplicationResource(ABC):
         self_link = {"rel": "self", "href": "/api/"+db_table_name+"?" + self.getTemplateLink(template) + self.getFieldListLink(field_list) + self.getPagination(limit, offset)}
         links.append(self_link)
 
-        next_link = {"rel": "next", "href": "/api/"+db_table_name+"?" + self.getTemplateLink(template) + self.getFieldListLink(field_list) + self.getPagination(limit, offset+limit)}
+        next_link = {"rel": "next", "href": "/api/"+db_table_name+"?" + self.getTemplateLink(template) + self.getFieldListLink(field_list) + self.getPagination(limit, str(int(offset)+int(limit)))}
         links.append(next_link)
 
-        if offset-limit >= 0:
-            prev_link = {"rel": "prev", "href": "/api/"+db_table_name+"?" + self.getTemplateLink(template) + self.getFieldListLink(field_list) + self.getPagination(limit, offset-limit)}
+        if int(offset)-int(limit) >= 0:
+            prev_link = {"rel": "prev", "href": "/api/"+db_table_name+"?" + self.getTemplateLink(template) + self.getFieldListLink(field_list) + self.getPagination(limit, str(int(offset)-int(limit)))}
             links.append(prev_link)
 
         result['links'] = links
@@ -118,4 +118,4 @@ class BaseApplicationResource(ABC):
         return result
 
     def getPagination(self, limit, offset):
-        return "limit="+ str(limit) + "&offset=" + str(offset)
+        return "&limit="+ limit + "&offset=" + offset
