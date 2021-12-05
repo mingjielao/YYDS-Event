@@ -1,5 +1,4 @@
 import pymysql
-import json
 import logging
 
 import middleware.context as context
