@@ -35,102 +35,12 @@ def get_item(table_name, key_value):
     return response
 
 
-def do_a_scan(table_name, filter_expression=None, expression_attributes=None, projection_expression=None,
-              expression_attribute_names=None):
-
-    table = dynamodb.Table(table_name)
-
-    if filter_expression is not None and projection_expression is not None:
-        if expression_attribute_names is not None:
-            response = table.scan(
-                FilterExpression=filter_expression,
-                ExpressionAttributeValues=expression_attributes,
-                ProjectionAttributes=projection_expression,
-                ExpressionAttributeNames=expression_attribute_names
-            )
-        else:
-            response = table.scan(
-                FilterExpression=filter_expression,
-                ExpressionAttributeValues=expression_attributes,
-                ProjectionAttributes=projection_expression)
-    elif filter_expression is not None:
-        if expression_attribute_names is not None:
-            response = table.scan(
-                FilterExpression=filter_expression,
-                ExpressionAttributeValues=expression_attributes,
-                ExpressionAttributeNames=expression_attribute_names
-            )
-        else:
-            response = table.scan(
-                FilterExpression=filter_expression,
-                ExpressionAttributeValues=expression_attributes
-            )
-    elif projection_expression is not None:
-        if expression_attribute_names is not None:
-            response = table.scan(
-                ProjectionExpression=projection_expression,
-                ExpressionAttributeNames=expression_attribute_names
-            )
-        else:
-            response = table.scan(
-                ProjectionExpression=projection_expression
-            )
-    else:
-        response = table.scan()
-
-    return response["Items"]
-
 
 def put_item(table_name, item):
 
     table = dynamodb.Table(table_name)
     res = table.put_item(Item=item)
     return res
-
-
-'''def add_response(table_name, comment_id, commenter_email, response):
-    table = dynamodb.Table(table_name)
-    Key={
-        "comment_id": comment_id
-    }
-    dt = time.time()
-    dts = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(dt))
-
-    full_rsp = {
-        "email": commenter_email,
-        "datetime": dts,
-        "response": response,
-        "response_id": str(uuid.uuid4()),
-        "version_id": str(uuid.uuid4())
-    }
-    UpdateExpression="SET responses = list_append(responses, :i)"
-    ExpressionAttributeValues={
-        ':i': [full_rsp]
-    }
-    ReturnValues="UPDATED_NEW"
-
-    res = table.update_item(
-        Key=Key,
-        UpdateExpression=UpdateExpression,
-        ExpressionAttributeValues=ExpressionAttributeValues,
-        ReturnValues=ReturnValues
-    )
-
-    return res'''
-
-
-'''def find_by_template(table_name, template):
-
-
-    fe = ' AND '.join(['{0}=:{0}'.format(k) for k, v in template.items()])
-    ea = {':{}'.format(k):v for k, v in template.items()}
-
-    tbl = dynamodb.Table(table_name)
-    result = tbl.scan(
-        FilterExpression=fe,
-        ExpressionAttributeValues=ea
-    )
-    return result'''
 
 
 def add_relation(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2):
