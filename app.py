@@ -78,6 +78,8 @@ def do_resource_collection(resource_collection):
         res = svc.create(request.get_json())
         if res == -1:
             rsp = Response(json.dumps("Bad data", default=str), status=400, content_type="application/json")
+        elif res == -2: # data is incorrect
+            rsp = Response(json.dumps("Incorrect data", default=str), status=422, content_type="application/json")
         else:
             rsp = Response(json.dumps(res, default=str), status=201, content_type="application/json")
 
