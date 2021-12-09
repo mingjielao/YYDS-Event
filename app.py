@@ -126,7 +126,7 @@ def linked_resource(resource_id, linked_resource):
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
-@app.route('api/registeredUser/<user_id>', method=['Get'])
+@app.route('/api/registeredUser/<user_id>', methods=['Get'])
 def registeredUser(user_id):
     request_inputs = RESTContext(request)
 
