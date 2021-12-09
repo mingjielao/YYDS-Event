@@ -33,6 +33,16 @@ blueprint = make_google_blueprint(
     reprompt_consent=True,
     scope=["profile", "email"],
 )
+
+
+class SetEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        else:
+            return json.JSONEncoder.default(self, obj)
+
+
 app.register_blueprint(blueprint, url_prefix="/login")
 g_bp = app.blueprints.get("google")
 
@@ -48,7 +58,6 @@ g_bp = app.blueprints.get("google")
 #         test = url_for("google.login")
 #         a = redirect(url_for("google.login"))
 #         return a
-
 
 
 @app.after_request
@@ -82,7 +91,7 @@ def do_resource_collection(resource_collection):
         res = svc.create(request.get_json())
         if res == -1:
             rsp = Response(json.dumps("Bad data", default=str), status=400, content_type="application/json")
-        elif res == -2: # data is incorrect
+        elif res == -2:  # data is incorrect
             rsp = Response(json.dumps("Incorrect data", default=str), status=422, content_type="application/json")
         else:
             rsp = Response(json.dumps(res, default=str), status=201, content_type="application/json")
@@ -112,6 +121,7 @@ def specific_resource(resource_collection, resource_id):
         rsp = Response(json.dumps(res, default=str), status=204, content_type="application/json")
     return rsp
 
+
 @app.route('/api/event/<resource_id>/<linked_resource>', methods=["GET"])
 def linked_resource(resource_id, linked_resource):
     request_inputs = RESTContext(request, "event")
@@ -120,37 +130,41 @@ def linked_resource(resource_id, linked_resource):
     linked_svc = service.get_service(linked_resource)
 
     if linked_svc is None:
-        rsp = Response(json.dumps("Linked resource not found", default=str), status=404, content_type="application/json")
+        rsp = Response(json.dumps("Linked resource not found", default=str), status=404,
+                       content_type="application/json")
     elif linked_resource == "eventvenue" or linked_resource == "eventtype" or linked_resource == "eventorganizer":
-        field_name = linked_resource[5:]+"_id"
-        res = linked_svc.get_by_resource_id(str(svc.get_by_resource_id(resource_id, field_list=[field_name])[0][field_name]), field_list=request_inputs.fields)
+        field_name = linked_resource[5:] + "_id"
+        res = linked_svc.get_by_resource_id(
+            str(svc.get_by_resource_id(resource_id, field_list=[field_name])[0][field_name]),
+            field_list=request_inputs.fields)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
-@app.route('/api/registeredUser/<user_id>', methods=['Get'])
-def registeredUser(user_id):
 
-    res = db.get_attribute_list("Event-User", "event_id", "user_id", user_id)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+# Return a list of user_id
+@app.route('/api/registeredUser/<event_id>', methods=['Get'])
+def registeredUser(event_id):
+    res = db.get_attribute_set("Event-User", "event_id", "user_id", event_id)
+    rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
 
     return rsp
+
 
 @app.route('/api/addUser/<event_id>/<user_id>', methods=['Get'])
 def addUser(event_id, user_id):
-
-    res = db.add_attribute("Event-User", "event_id", "user_id", event_id, user_id)
+    res = db.add_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
+
 
 @app.route('/api/removeUser/<event_id>/<user_id>', methods=['Get'])
 def removeUser(event_id, user_id):
-
-    # Todo
-    # res = db.remove_attribute("Event-User", "event_id", "user_id", event_id, user_id)
+    res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

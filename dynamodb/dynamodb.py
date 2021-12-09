@@ -29,13 +29,15 @@ get_attribute_list("User-Event", "user_id", "event_id", 25)
 
 this will return all event_id that user 25 joined
 '''
-def get_attribute_list(table_name, attribute_key_name, attribute_to_get_name, attribute_key_value):
+def get_attribute_set(table_name, attribute_key_name, attribute_to_get_name, attribute_key_value):
     res = get_item(table_name,
                       {
                           attribute_key_name: attribute_key_value
                       })
-    json.dumps(res, indent=3)
-    return res[attribute_to_get_name]
+    if res:
+        return res[attribute_to_get_name]
+    else:
+        return res
 
 '''
 eg. in User-Event Table
@@ -44,14 +46,81 @@ add_attribute("User-Event", "user_id", "event_id", 25, 9)
 if user 25 exists in the table, this will add 9 to the event id list of user 25
 If user 25 does not exist in the table, this will create a row with user 25 and add 9 to the event id list of this newly created user
 '''
+def add_relation(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2):
+    if find_by_attribute(table_name, attribute_name1, attribute_value1):
+        res = add_attribute(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2)
+    else:
+        l = {attribute_value2}
+        item = {
+            attribute_name1: attribute_value1,
+            attribute_name2: l,
+            "version_id": str(uuid.uuid4()),
+        }
+
+        res = put_item(table_name, item=item)
+    return res
+
+
+'''
+eg. in User-Event Table
+remove_attribute("User-Event", "user_id", "event_id", 25, 9)
+
+if user 25 exists in the table, this will remove 9 from the event id list of user 25
+If user 25 does not exist in the table, this doesn't do anything
+'''
+def remove_relation(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2):
+    res = remove_attribute(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2)
+    return res
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def remove_attribute(table_name, attribute_key_name, attribute_to_add_name, attribute_key_value, attribute_to_add_value):
+    table = dynamodb.Table(table_name)
+    Key = {
+        attribute_key_name: attribute_key_value
+    }
+    UpdateExpression = "DELETE " + attribute_to_add_name + " :c"
+    ExpressionAttributeValues = {
+        ":c": {attribute_to_add_value }
+    }
+    ReturnValues = "UPDATED_NEW"
+
+    res = table.update_item(
+        Key=Key,
+        UpdateExpression=UpdateExpression,
+        ExpressionAttributeValues=ExpressionAttributeValues,
+        ReturnValues=ReturnValues
+    )
+
+    return res
+
+
 def add_attribute(table_name, attribute_key_name, attribute_to_add_name, attribute_key_value, attribute_to_add_value):
     table = dynamodb.Table(table_name)
     Key = {
         attribute_key_name: attribute_key_value
     }
-    UpdateExpression = "SET " + attribute_to_add_name + " = list_append(" + attribute_to_add_name + ", :i)"
+    UpdateExpression = "ADD " + attribute_to_add_name + " :c"
     ExpressionAttributeValues = {
-        ':i': [attribute_to_add_value]
+        ":c": {attribute_to_add_value }
     }
     ReturnValues = "UPDATED_NEW"
 
@@ -82,22 +151,6 @@ def put_item(table_name, item):
 
 
 # primiary key -> attribute1
-def add_relation(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2):
-    if find_by_attribute(table_name, attribute_name1, attribute_value1):
-        print("!")
-        res = add_attribute(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2)
-    else:
-        print("?")
-        l = [attribute_value2]
-        item = {
-            attribute_name1: attribute_value1,
-            attribute_name2: l,
-            "version_id": str(uuid.uuid4()),
-        }
-
-        res = put_item(table_name, item=item)
-
-    return res
 
 
 
@@ -110,7 +163,7 @@ def find_by_attribute(table_name, attribute_name, attribute_value):
 
     result = table.scan(FilterExpression=filterExpression,
                         ExpressionAttributeValues=expressionAttributes)
-    json.dumps(result, indent=3)
+    #json.dumps(result, indent=3)
     return result["Items"]
 
 

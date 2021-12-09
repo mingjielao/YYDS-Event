@@ -16,19 +16,27 @@ def t1():
 def t2():
     table_name = "User-Event"
     attribute_name = "user_id"
-    attribute_value = "24"
+    attribute_value = "9"
     res = db.find_by_attribute(table_name, attribute_name, attribute_value)
-    print("t2 -- res = ", json.dumps(res, indent=3))
+    print("t2 -- res = ", res)
 
 def t3():
     table_name = "User-Event"
     attribute1_name = "user_id"
     attribute2_name = "event_id"
-    attribute1_value = "24"
-    attribute2_value = "4"
+    attribute1_value = "9"
+    attribute2_value = "6"
     res = db.add_relation(table_name, attribute1_name,attribute2_name, attribute1_value, attribute2_value)
-    print("t3 -- res = ", json.dumps(res, indent=3))
+    print("t3 -- res = ", res)
 
+def t4():
+    table_name = "User-Event"
+    attribute1_name = "user_id"
+    attribute2_name = "event_id"
+    attribute1_value = "9"
+    attribute2_value = "6"
+    res = db.remove_relation(table_name, attribute1_name,attribute2_name, attribute1_value, attribute2_value)
+    print("t3 -- res = ", res)
 
 def t6():
 
@@ -55,7 +63,7 @@ def t6():
 
 #t1()
 t2()
-#t3()
+#t4()
 #t4()
 #t5()
 #t6()
