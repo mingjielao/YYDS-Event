@@ -11,7 +11,7 @@ import middleware.security as security
 
 from middleware.notification import NotificationMiddlewareHandler
 
-import dynamodb as db
+from dynamodb import dynamodb as db
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
@@ -45,6 +45,7 @@ g_bp = app.blueprints.get("google")
 #         return redirect(url_for("google.login"))
 #     print("before request...")
 #     if not result_ok:
+#         test = url_for("google.login")
 #         a = redirect(url_for("google.login"))
 #         return a
 
@@ -128,16 +129,28 @@ def linked_resource(resource_id, linked_resource):
 
 @app.route('/api/registeredUser/<user_id>', methods=['Get'])
 def registeredUser(user_id):
-    request_inputs = RESTContext(request)
 
-    res = db.get_item("Event-User",
-    {
-        "relation_id": "a27b2819-25aa-4f89-8a65-4951cf3d1aac"
-    })
+    res = db.get_attribute_list("Event-User", "event_id", "user_id", user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
 
+@app.route('/api/addUser/<event_id>/<user_id>', methods=['Get'])
+def addUser(event_id, user_id):
+
+    res = db.add_attribute("Event-User", "event_id", "user_id", event_id, user_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
+
+@app.route('/api/removeUser/<event_id>/<user_id>', methods=['Get'])
+def removeUser(event_id, user_id):
+
+    # Todo
+    # res = db.remove_attribute("Event-User", "event_id", "user_id", event_id, user_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
