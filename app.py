@@ -11,6 +11,8 @@ import middleware.security as security
 
 from middleware.notification import NotificationMiddlewareHandler
 
+import dynamodb as db
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -37,13 +39,14 @@ g_bp = app.blueprints.get("google")
 
 # @app.before_request
 # def before_request_func():
-    # try:
-    #     result_ok = security.check_security(request, google, g_bp)
-    # except Exception as e:  # or maybe any OAuth2Error
-    #     return redirect(url_for("google.login"))
-    # print("before request...")
-    # if not result_ok:
-    #     return redirect(url_for("google.login"))
+#     try:
+#         result_ok = security.check_security(request, google, g_bp)
+#     except Exception as e:  # or maybe any OAuth2Error
+#         return redirect(url_for("google.login"))
+#     print("before request...")
+#     if not result_ok:
+#         a = redirect(url_for("google.login"))
+#         return a
 
 
 
@@ -122,6 +125,19 @@ def linked_resource(resource_id, linked_resource):
         res = linked_svc.get_by_resource_id(str(svc.get_by_resource_id(resource_id, field_list=[field_name])[0][field_name]), field_list=request_inputs.fields)
         rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
+
+@app.route('api/registeredUser/<user_id>', method=['Get'])
+def registeredUser(user_id):
+    request_inputs = RESTContext(request)
+
+    res = db.get_item("Event-User",
+    {
+        "relation_id": "a27b2819-25aa-4f89-8a65-4951cf3d1aac"
+    })
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

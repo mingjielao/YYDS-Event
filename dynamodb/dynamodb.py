@@ -21,8 +21,48 @@ dynamodb = boto3.resource('dynamodb',
                           aws_secret_access_key="gIHrbOdBRq/NKRbhmmC3tqLcDtUH3VLOma6/RJ6B",
                           region_name='us-east-2')
 
-other_client = boto3.client("dynamodb",region_name='us-east-2')
+other_client = boto3.client("dynamodb", region_name='us-east-2')
 
+'''
+eg. in User-Event Table
+get_attribute_list("User-Event", "user_id", "event_id", 25)
+
+this will return all event_id that user 25 joined
+'''
+def get_attribute_list(table_name, attribute_key_name, attribute_to_get_name, attribute_key_value):
+    res = get_item(table_name,
+                      {
+                          attribute_key_name: attribute_key_value
+                      })
+    json.dumps(res, indent=3)
+    return res[attribute_to_get_name]
+
+'''
+eg. in User-Event Table
+add_attribute("User-Event", "user_id", "event_id", 25, 9)
+
+if user 25 exists in the table, this will add 9 to the event id list of user 25
+If user 25 does not exist in the table, this will create a row with user 25 and add 9 to the event id list of this newly created user
+'''
+def add_attribute(table_name, attribute_key_name, attribute_to_add_name, attribute_key_value, attribute_to_add_value):
+    table = dynamodb.Table(table_name)
+    Key = {
+        attribute_key_name: attribute_key_value
+    }
+    UpdateExpression = "SET " + attribute_to_add_name + " = list_append(" + attribute_to_add_name + ", :i)"
+    ExpressionAttributeValues = {
+        ':i': [attribute_to_add_value]
+    }
+    ReturnValues = "UPDATED_NEW"
+
+    res = table.update_item(
+        Key=Key,
+        UpdateExpression=UpdateExpression,
+        ExpressionAttributeValues=ExpressionAttributeValues,
+        ReturnValues=ReturnValues
+    )
+
+    return res
 
 def get_item(table_name, key_value):
     table = dynamodb.Table(table_name)
@@ -35,39 +75,32 @@ def get_item(table_name, key_value):
     return response
 
 
-
 def put_item(table_name, item):
-
     table = dynamodb.Table(table_name)
     res = table.put_item(Item=item)
     return res
 
 
+# primiary key -> attribute1
 def add_relation(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2):
-    '''dt = time.time()
-    dts = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(dt))'''
+    if find_by_attribute(table_name, attribute_name1, attribute_value1):
+        print("!")
+        res = add_attribute(table_name, attribute_name1, attribute_name2, attribute_value1, attribute_value2)
+    else:
+        print("?")
+        l = [attribute_value2]
+        item = {
+            attribute_name1: attribute_value1,
+            attribute_name2: l,
+            "version_id": str(uuid.uuid4()),
+        }
 
-    item = {
-        "relation_id": str(uuid.uuid4()),
-        "version_id": str(uuid.uuid4()),
-        attribute_name1: attribute_value1,
-        attribute_name2: attribute_value2
-    }
-
-    res = put_item(table_name, item=item)
+        res = put_item(table_name, item=item)
 
     return res
 
 
-'''
-table_name = "User-Event"
-attribute1_name = "user_id"
-attribute2_name = "event_id"
-attribute1_value = "24"
-attribute2_value = "4"
-res = db.add_relation(table_name, attribute1_name,attribute2_name, attribute1_value, attribute2_value)
-print("t3 -- res = ", json.dumps(res, indent=3))
-'''
+
 def find_by_attribute(table_name, attribute_name, attribute_value):
     table = dynamodb.Table(table_name)
 
@@ -82,7 +115,6 @@ def find_by_attribute(table_name, attribute_name, attribute_value):
 
 
 def write_relation_if_not_changed(tabale_name, new_relation, old_relation):
-
     new_version_id = str(uuid.uuid4())
     new_relation["version_id"] = new_version_id
 
