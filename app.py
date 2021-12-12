@@ -74,7 +74,7 @@ def hello_world():
 def login():
     return redirect(url_for("google.login"))
 
-@app.route('/event/<resource_collection>', methods=["GET", "POST"])
+@app.route('/<resource_collection>', methods=["GET", "POST"])
 def do_resource_collection(resource_collection):
     request_inputs = RESTContext(request, resource_collection)
     service = ServiceFactory()
@@ -101,7 +101,7 @@ def do_resource_collection(resource_collection):
     return rsp
 
 
-@app.route('/event/<resource_collection>/<resource_id>', methods=["GET", "PUT", "DELETE"])
+@app.route('/<resource_collection>/<resource_id>', methods=["GET", "PUT", "DELETE"])
 def specific_resource(resource_collection, resource_id):
     request_inputs = RESTContext(request, resource_collection)
     service = ServiceFactory()
@@ -124,7 +124,7 @@ def specific_resource(resource_collection, resource_id):
     return rsp
 
 
-@app.route('/event/<resource_id>/<linked_resource>', methods=["GET"])
+@app.route('/<resource_id>/<linked_resource>', methods=["GET"])
 def linked_resource(resource_id, linked_resource):
     request_inputs = RESTContext(request, "event")
     service = ServiceFactory()
@@ -144,7 +144,7 @@ def linked_resource(resource_id, linked_resource):
 
 
 # Return a list of user_id
-@app.route('event/eventRegisteredUser/<event_id>', methods=['Get'])
+@app.route('/getdUsers/<event_id>', methods=['Get'])
 def registeredUser(event_id):
     res = db.get_attribute_set("Event-User", "event_id", "user_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
@@ -152,7 +152,7 @@ def registeredUser(event_id):
     return rsp
 
 
-@app.route('/event/eventAddUser/<event_id>/<user_id>', methods=['Post'])
+@app.route('/addUser/<event_id>/<user_id>', methods=['Post'])
 def eventAddUser(event_id, user_id):
     res = db.add_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
@@ -160,7 +160,7 @@ def eventAddUser(event_id, user_id):
     return rsp
 
 
-@app.route('/event/eventRemoveUser/<event_id>/<user_id>', methods=['Get'])
+@app.route('/removeUser/<event_id>/<user_id>', methods=['Get'])
 def removeUser(event_id, user_id):
     res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
