@@ -10,5 +10,5 @@ class EventOrganizerResource(BaseApplicationResource):
         return
 
     def get_by_resource_id(self, resource_id,  field_list = None):
-        res = json.load(requests.get('http://localhost:5001/api/user/' + resource_id).text)
+        res = json.loads(requests.get('http://localhost:5001/api/user/' + resource_id).content)
         return res

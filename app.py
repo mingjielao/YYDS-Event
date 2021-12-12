@@ -144,29 +144,51 @@ def linked_resource(resource_id, linked_resource):
 
 
 # Return a list of user_id
-@app.route('/getdUsers/<event_id>', methods=['Get'])
-def registeredUser(event_id):
+@app.route('/getUsers/<event_id>', methods=['GET'])
+def getUsers(event_id):
     res = db.get_attribute_set("Event-User", "event_id", "user_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
 
     return rsp
 
 
-@app.route('/addUser/<event_id>/<user_id>', methods=['Post'])
-def eventAddUser(event_id, user_id):
+@app.route('/addUser/<event_id>/<user_id>', methods=['POST'])
+def addUser(event_id, user_id):
     res = db.add_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
 
 
-@app.route('/removeUser/<event_id>/<user_id>', methods=['Get'])
+@app.route('/removeUser/<event_id>/<user_id>', methods=['GET'])
 def removeUser(event_id, user_id):
     res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
 
+@app.route('/getGroups/<event_id>', methods=['GET'])
+def getGroups(event_id):
+    res = db.get_attribute_set("Event-Group", "event_id", "user_id", event_id)
+    rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
+
+    return rsp
+
+
+@app.route('/addGroup/<event_id>/<group_id>', methods=['POST'])
+def addGroup(event_id, group_id):
+    res = db.add_relation("Event-Group", "event_id", "user_id", event_id, group_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
+
+
+@app.route('/removeGroup/<event_id>/<group_id>', methods=['DELETE'])
+def removeGroup(event_id, group_id):
+    res = db.remove_relation("Event-Group", "event_id", "user_id", event_id, group_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
+    return rsp
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
