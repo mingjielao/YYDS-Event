@@ -31,8 +31,7 @@ blueprint = make_google_blueprint(
     client_id=client_id,
     client_secret=client_secret,
     # reprompt_consent=True,
-    scope=["profile", "email"],
-		redirect_url='https://m6p93ab8g4.execute-api.us-east-2.amazonaws.com/prod/static'
+    scope=["profile", "email"]
 )
 
 
