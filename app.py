@@ -159,7 +159,7 @@ def addUser(event_id, user_id):
     return rsp
 
 
-@app.route('/removeUser/<event_id>/<user_id>', methods=['GET'])
+@app.route('/removeUser/<event_id>/<user_id>', methods=['DELETE'])
 def removeUser(event_id, user_id):
     res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
