@@ -146,7 +146,6 @@ def linked_resource(resource_id, linked_resource):
 def registeredUser(event_id):
     res = db.get_attribute_set("Event-User", "event_id", "user_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
-
     return rsp
 
 
@@ -156,14 +155,33 @@ def addUser(event_id, user_id):
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
-
-
 @app.route('/api/removeUser/<event_id>/<user_id>', methods=['Get'])
 def removeUser(event_id, user_id):
     res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-
     return rsp
+
+
+@app.route('/api/registeredGroup/<event_id>', methods=['Get'])
+def registeredGroup(event_id):
+    res = db.get_attribute_set("Event-Group", "event_id", "group_id", event_id)
+    rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
+    return rsp
+
+
+@app.route('/api/addGroup/<event_id>/<group_id>', methods=['Get'])
+def addGroup(event_id, group_id):
+    res = db.add_relation("Event-Group", "event_id", "group_id", event_id, group_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    return rsp
+
+
+@app.route('/api/removeGroup/<event_id>/<group_id>', methods=['Get'])
+def removeGroup(event_id, group_id):
+    res = db.remove_relation("Event-Group", "event_id", "group_id", event_id, group_id)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    return rsp
+
 
 
 if __name__ == '__main__':
