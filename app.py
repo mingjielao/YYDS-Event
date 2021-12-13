@@ -123,7 +123,7 @@ def specific_resource(resource_collection, resource_id):
     return rsp
 
 
-@app.route('/<resource_id>/<linked_resource>', methods=["GET"])
+@app.route('/event/<resource_id>/<linked_resource>', methods=["GET"])
 def linked_resource(resource_id, linked_resource):
     request_inputs = RESTContext(request, "event")
     service = ServiceFactory()
