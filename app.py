@@ -30,8 +30,8 @@ os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 blueprint = make_google_blueprint(
     client_id=client_id,
     client_secret=client_secret,
-    reprompt_consent=True,
-    scope=["profile", "email"],
+    # reprompt_consent=True,
+    scope=["profile", "email"]
 )
 
 
@@ -55,9 +55,7 @@ g_bp = app.blueprints.get("google")
 #         return redirect(url_for("google.login"))
 #     print("before request...")
 #     if not result_ok:
-#         test = url_for("google.login")
-#         a = redirect(url_for("google.login"))
-#         return a
+#         return redirect(url_for("google.login"))
 
 
 @app.after_request
@@ -71,8 +69,11 @@ def after_request_func(response):
 def hello_world():
     return '<u>Hello World!</u>'
 
+@app.route('/login')
+def login():
+    return redirect(url_for("google.login"))
 
-@app.route('/api/<resource_collection>', methods=["GET", "POST"])
+@app.route('/<resource_collection>', methods=["GET", "POST"])
 def do_resource_collection(resource_collection):
     request_inputs = RESTContext(request, resource_collection)
     service = ServiceFactory()
@@ -99,7 +100,7 @@ def do_resource_collection(resource_collection):
     return rsp
 
 
-@app.route('/api/<resource_collection>/<resource_id>', methods=["GET", "PUT", "DELETE"])
+@app.route('/<resource_collection>/<resource_id>', methods=["GET", "PUT", "DELETE"])
 def specific_resource(resource_collection, resource_id):
     request_inputs = RESTContext(request, resource_collection)
     service = ServiceFactory()
@@ -122,7 +123,7 @@ def specific_resource(resource_collection, resource_id):
     return rsp
 
 
-@app.route('/api/event/<resource_id>/<linked_resource>', methods=["GET"])
+@app.route('/<resource_id>/<linked_resource>', methods=["GET"])
 def linked_resource(resource_id, linked_resource):
     request_inputs = RESTContext(request, "event")
     service = ServiceFactory()
@@ -142,47 +143,51 @@ def linked_resource(resource_id, linked_resource):
 
 
 # Return a list of user_id
-@app.route('/api/registeredUser/<event_id>', methods=['Get'])
-def registeredUser(event_id):
+@app.route('/getUsers/<event_id>', methods=['GET'])
+def getUsers(event_id):
     res = db.get_attribute_set("Event-User", "event_id", "user_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
+
     return rsp
 
 
-@app.route('/api/addUser/<event_id>/<user_id>', methods=['Get'])
+@app.route('/addUser/<event_id>/<user_id>', methods=['POST'])
 def addUser(event_id, user_id):
     res = db.add_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
-@app.route('/api/removeUser/<event_id>/<user_id>', methods=['Get'])
+
+
+@app.route('/removeUser/<event_id>/<user_id>', methods=['GET'])
 def removeUser(event_id, user_id):
     res = db.remove_relation("Event-User", "event_id", "user_id", event_id, user_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
     return rsp
 
-
-@app.route('/api/registeredGroup/<event_id>', methods=['Get'])
-def registeredGroup(event_id):
-    res = db.get_attribute_set("Event-Group", "event_id", "group_id", event_id)
+@app.route('/getGroups/<event_id>', methods=['GET'])
+def getGroups(event_id):
+    res = db.get_attribute_set("Event-Group", "event_id", "user_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
+
     return rsp
 
 
-@app.route('/api/addGroup/<event_id>/<group_id>', methods=['Get'])
+@app.route('/addGroup/<event_id>/<group_id>', methods=['POST'])
 def addGroup(event_id, group_id):
-    res = db.add_relation("Event-Group", "event_id", "group_id", event_id, group_id)
+    res = db.add_relation("Event-Group", "event_id", "user_id", event_id, group_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
     return rsp
 
 
-@app.route('/api/removeGroup/<event_id>/<group_id>', methods=['Get'])
+@app.route('/removeGroup/<event_id>/<group_id>', methods=['DELETE'])
 def removeGroup(event_id, group_id):
-    res = db.remove_relation("Event-Group", "event_id", "group_id", event_id, group_id)
+    res = db.remove_relation("Event-Group", "event_id", "user_id", event_id, group_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+
     return rsp
-
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
