@@ -168,7 +168,7 @@ def removeUser(event_id, user_id):
 
 @app.route('/getGroups/<event_id>', methods=['GET'])
 def getGroups(event_id):
-    res = db.get_attribute_set("Event-Group", "event_id", "user_id", event_id)
+    res = db.get_attribute_set("Event-Group", "event_id", "group_id", event_id)
     rsp = Response(json.dumps(res, cls=SetEncoder), status=200, content_type="application/json")
 
     return rsp
@@ -176,7 +176,7 @@ def getGroups(event_id):
 
 @app.route('/addGroup/<event_id>/<group_id>', methods=['POST'])
 def addGroup(event_id, group_id):
-    res = db.add_relation("Event-Group", "event_id", "user_id", event_id, group_id)
+    res = db.add_relation("Event-Group", "event_id", "group_id", event_id, group_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
@@ -184,7 +184,7 @@ def addGroup(event_id, group_id):
 
 @app.route('/removeGroup/<event_id>/<group_id>', methods=['DELETE'])
 def removeGroup(event_id, group_id):
-    res = db.remove_relation("Event-Group", "event_id", "user_id", event_id, group_id)
+    res = db.remove_relation("Event-Group", "event_id", "group_id", event_id, group_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
     return rsp
